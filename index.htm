@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>賃貸住宅費シミュレーター</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #f4f6f8;
+            font-family: Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 26px;
+        }
+
+        .description {
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .calculate-button {
+            background-color: #246bfd;
+            color: white;
+        }
+
+        .calculate-button:hover {
+            background-color: #1855cc;
+        }
+
+        .clear-button {
+            background-color: #dddddd;
+        }
+
+        .clear-button:hover {
+            background-color: #c8c8c8;
+        }
+
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #ffe5e5;
+            color: #b00020;
+            border-radius: 6px;
+        }
+
+        .result {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f0f5ff;
+            border: 1px solid #a9c2ff;
+            border-radius: 8px;
+        }
+
+        .result h2 {
+            margin-top: 0;
+            font-size: 21px;
+        }
+
+        .result p {
+            margin: 10px 0;
+        }
+
+        .total {
+            padding-top: 15px;
+            border-top: 1px solid #aaa;
+            font-size: 21px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>賃貸住宅費シミュレーター</h1>
+
+        <p class="description">
+            1か月の家賃と居住年数を入力すると、
+            通常の家賃と2年に1回発生する更新費用を含めた
+            支払い総額を計算します。
+        </p>
+
+        <div class="input-group">
+            <label for="monthlyRent">1か月の家賃（円）</label>
+
+            <input
+                type="number"
+                id="monthlyRent"
+                value="100000"
+                min="1"
+                step="1000"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="years">居住年数</label>
+
+            <input
+                type="number"
+                id="years"
+                value="10"
+                min="1"
+                step="1"
+            >
+        </div>
+
+        <div class="buttons">
+
+            <button
+                type="button"
+                class="calculate-button"
+                onclick="calculateRent()"
+            >
+                計算する
+            </button>
+
+            <button
+                type="button"
+                class="clear-button"
+                onclick="clearForm()"
+            >
+                クリア
+            </button>
+
+        </div>
+
+        <div id="errorMessage" class="error"></div>
+
+        <div id="result" class="result">
+
+            <h2>計算結果</h2>
+
+            <p>
+                通常の家賃：
+                <strong id="basicTotal"></strong>
+            </p>
+
+            <p>
+                更新回数：
+                <strong id="renewalCount"></strong>
+            </p>
+
+            <p>
+                更新費用：
+                <strong id="renewalCost"></strong>
+            </p>
+
+            <p class="total">
+                支払い総額：
+                <span id="totalCost"></span>
+            </p>
+
+        </div>
+
+    </div>
+
+    <script>
+        function calculateRent() {
+
+            const monthlyRent =
+                Number(document.getElementById("monthlyRent").value);
+
+            const years =
+                Number(document.getElementById("years").value);
+
+            const errorMessage =
+                document.getElementById("errorMessage");
+
+            const result =
+                document.getElementById("result");
+
+            errorMessage.style.display = "none";
+            result.style.display = "none";
+
+            if (
+                !Number.isFinite(monthlyRent) ||
+                !Number.isFinite(years) ||
+                monthlyRent <= 0 ||
+                years <= 0
+            ) {
+                errorMessage.textContent =
+                    "家賃と居住年数には、0より大きい数値を入力してください。";
+
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            // 通常の家賃
+            const basicTotal =
+                monthlyRent * 12 * years;
+
+            // 2年に1回、家賃1か月分の更新費用
+            const renewalCount =
+                Math.floor(years / 2);
+
+            const renewalCost =
+                monthlyRent * renewalCount;
+
+            // 支払い総額
+            const totalCost =
+                basicTotal + renewalCost;
+
+            document.getElementById("basicTotal").textContent =
+                basicTotal.toLocaleString("ja-JP") + "円";
+
+            document.getElementById("renewalCount").textContent =
+                renewalCount.toLocaleString("ja-JP") + "回";
+
+            document.getElementById("renewalCost").textContent =
+                renewalCost.toLocaleString("ja-JP") + "円";
+
+            document.getElementById("totalCost").textContent =
+                totalCost.toLocaleString("ja-JP") + "円";
+
+            result.style.display = "block";
+        }
+
+
+        function clearForm() {
+
+            document.getElementById("monthlyRent").value = "";
+            document.getElementById("years").value = "";
+
+            document.getElementById("errorMessage").style.display =
+                "none";
+
+            document.getElementById("result").style.display =
+                "none";
+        }
+    </script>
+
+</body>
+</html>
