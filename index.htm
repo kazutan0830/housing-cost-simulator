@@ -4,29 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>賃貸住宅費シミュレーター</title>
+    <title>住宅費シミュレーター</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            padding: 40px 20px;
-            background-color: #f4f6f8;
+            padding: 35px 15px;
+            background-color: #f2f4f7;
             font-family: Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            color: #222;
         }
 
         .container {
-            max-width: 550px;
+            max-width: 720px;
             margin: 0 auto;
             padding: 30px;
             background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             margin-top: 0;
             text-align: center;
-            font-size: 26px;
+            font-size: 28px;
+        }
+
+        .intro {
+            margin-bottom: 25px;
+            text-align: center;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #246bfd;
+            border-radius: 7px;
+            background-color: white;
+            color: #246bfd;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            background-color: #246bfd;
+            color: white;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 23px;
         }
 
         .description {
@@ -36,22 +83,27 @@
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
             font-weight: bold;
         }
 
         input {
-            box-sizing: border-box;
             width: 100%;
             padding: 12px;
             border: 1px solid #aaa;
             border-radius: 6px;
             font-size: 16px;
+        }
+
+        .unit-note {
+            margin-top: 5px;
+            color: #777;
+            font-size: 13px;
         }
 
         .buttons {
@@ -60,9 +112,9 @@
             margin-top: 25px;
         }
 
-        button {
+        .action-button {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             border: none;
             border-radius: 6px;
             font-size: 16px;
@@ -80,6 +132,7 @@
 
         .clear-button {
             background-color: #dddddd;
+            color: #222;
         }
 
         .clear-button:hover {
@@ -89,7 +142,7 @@
         .error {
             display: none;
             margin-top: 20px;
-            padding: 12px;
+            padding: 13px;
             background-color: #ffe5e5;
             color: #b00020;
             border-radius: 6px;
@@ -104,20 +157,45 @@
             border-radius: 8px;
         }
 
-        .result h2 {
+        .result h3 {
             margin-top: 0;
-            font-size: 21px;
         }
 
         .result p {
-            margin: 10px 0;
+            margin: 11px 0;
         }
 
         .total {
-            padding-top: 15px;
+            margin-top: 17px;
+            padding-top: 17px;
             border-top: 1px solid #aaa;
             font-size: 21px;
             font-weight: bold;
+        }
+
+        .notice {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #fff8df;
+            border-radius: 7px;
+            color: #665200;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 22px;
+            }
+
+            .tab-buttons,
+            .buttons {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -126,104 +204,304 @@
 
     <div class="container">
 
-        <h1>賃貸住宅費シミュレーター</h1>
+        <h1>住宅費シミュレーター</h1>
 
-        <p class="description">
-            1か月の家賃と居住年数を入力すると、
-            通常の家賃と2年に1回発生する更新費用を含めた
-            支払い総額を計算します。
+        <p class="intro">
+            賃貸住宅と分譲住宅にかかる支払い総額を計算します。
         </p>
 
-        <div class="input-group">
-            <label for="monthlyRent">1か月の家賃（円）</label>
-
-            <input
-                type="number"
-                id="monthlyRent"
-                value="100000"
-                min="1"
-                step="1000"
-            >
-        </div>
-
-        <div class="input-group">
-            <label for="years">居住年数</label>
-
-            <input
-                type="number"
-                id="years"
-                value="10"
-                min="1"
-                step="1"
-            >
-        </div>
-
-        <div class="buttons">
+        <div class="tab-buttons">
 
             <button
-                type="button"
-                class="calculate-button"
-                onclick="calculateRent()"
+                id="rentTabButton"
+                class="tab-button active"
+                onclick="showSection('rent')"
             >
-                計算する
+                賃貸住宅
             </button>
 
             <button
-                type="button"
-                class="clear-button"
-                onclick="clearForm()"
+                id="purchaseTabButton"
+                class="tab-button"
+                onclick="showSection('purchase')"
             >
-                クリア
+                分譲住宅
             </button>
 
         </div>
 
-        <div id="errorMessage" class="error"></div>
+        <!-- 賃貸住宅 -->
+        <section id="rentSection" class="section active">
 
-        <div id="result" class="result">
+            <h2>賃貸住宅費シミュレーター</h2>
 
-            <h2>計算結果</h2>
-
-            <p>
-                通常の家賃：
-                <strong id="basicTotal"></strong>
+            <p class="description">
+                1か月の家賃と居住年数から、
+                2年に1回発生する家賃1か月分の更新費用を含めて
+                支払い総額を計算します。
             </p>
 
-            <p>
-                更新回数：
-                <strong id="renewalCount"></strong>
+            <div class="input-group">
+                <label for="monthlyRent">1か月の家賃（円）</label>
+
+                <input
+                    type="number"
+                    id="monthlyRent"
+                    value="100000"
+                    min="1"
+                    step="1000"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="rentYears">居住年数</label>
+
+                <input
+                    type="number"
+                    id="rentYears"
+                    value="10"
+                    min="1"
+                    step="1"
+                >
+            </div>
+
+            <div class="buttons">
+
+                <button
+                    class="action-button calculate-button"
+                    onclick="calculateRent()"
+                >
+                    計算する
+                </button>
+
+                <button
+                    class="action-button clear-button"
+                    onclick="clearRent()"
+                >
+                    初期値に戻す
+                </button>
+
+            </div>
+
+            <div id="rentError" class="error"></div>
+
+            <div id="rentResult" class="result">
+
+                <h3>賃貸住宅の計算結果</h3>
+
+                <p>
+                    通常の家賃：
+                    <strong id="rentBasicTotal"></strong>
+                </p>
+
+                <p>
+                    更新回数：
+                    <strong id="rentRenewalCount"></strong>
+                </p>
+
+                <p>
+                    更新費用：
+                    <strong id="rentRenewalCost"></strong>
+                </p>
+
+                <p class="total">
+                    支払い総額：
+                    <span id="rentTotalCost"></span>
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- 分譲住宅 -->
+        <section id="purchaseSection" class="section">
+
+            <h2>分譲住宅費シミュレーター</h2>
+
+            <p class="description">
+                販売価格、頭金、住宅ローン金利、返済年数、
+                購入時の諸費用から支払い総額を計算します。
             </p>
 
-            <p>
-                更新費用：
-                <strong id="renewalCost"></strong>
-            </p>
+            <div class="input-group">
+                <label for="salePrice">住宅の販売価格（円）</label>
 
-            <p class="total">
-                支払い総額：
-                <span id="totalCost"></span>
-            </p>
+                <input
+                    type="number"
+                    id="salePrice"
+                    value="30000000"
+                    min="1"
+                    step="100000"
+                >
+            </div>
 
-        </div>
+            <div class="input-group">
+                <label for="downPayment">頭金（円）</label>
+
+                <input
+                    type="number"
+                    id="downPayment"
+                    value="3000000"
+                    min="0"
+                    step="100000"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="interestRate">住宅ローンの年利（％）</label>
+
+                <input
+                    type="number"
+                    id="interestRate"
+                    value="1.5"
+                    min="0"
+                    step="0.1"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="repaymentYears">返済年数</label>
+
+                <input
+                    type="number"
+                    id="repaymentYears"
+                    value="35"
+                    min="1"
+                    step="1"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="additionalCosts">購入時の諸費用（円）</label>
+
+                <input
+                    type="number"
+                    id="additionalCosts"
+                    value="2000000"
+                    min="0"
+                    step="100000"
+                >
+
+                <div class="unit-note">
+                    登記費用、仲介手数料、保険料などの合計を入力します。
+                </div>
+            </div>
+
+            <div class="buttons">
+
+                <button
+                    class="action-button calculate-button"
+                    onclick="calculatePurchase()"
+                >
+                    計算する
+                </button>
+
+                <button
+                    class="action-button clear-button"
+                    onclick="clearPurchase()"
+                >
+                    初期値に戻す
+                </button>
+
+            </div>
+
+            <div id="purchaseError" class="error"></div>
+
+            <div id="purchaseResult" class="result">
+
+                <h3>分譲住宅の計算結果</h3>
+
+                <p>
+                    住宅ローン借入金額：
+                    <strong id="loanAmount"></strong>
+                </p>
+
+                <p>
+                    毎月の返済額：
+                    <strong id="monthlyPayment"></strong>
+                </p>
+
+                <p>
+                    利息総額：
+                    <strong id="totalInterest"></strong>
+                </p>
+
+                <p>
+                    住宅ローン返済総額：
+                    <strong id="loanTotal"></strong>
+                </p>
+
+                <p class="total">
+                    最終的な支払い総額：
+                    <span id="purchaseGrandTotal"></span>
+                </p>
+
+            </div>
+
+            <div class="notice">
+                この試算では、固定金利・元利均等返済を前提としています。
+                固定資産税、管理費、修繕積立金、将来の修繕費などは
+                現在の計算には含まれていません。
+            </div>
+
+        </section>
 
     </div>
 
     <script>
+        function formatYen(number) {
+            return Math.round(number).toLocaleString("ja-JP") + "円";
+        }
+
+
+        function showSection(sectionName) {
+
+            const rentSection =
+                document.getElementById("rentSection");
+
+            const purchaseSection =
+                document.getElementById("purchaseSection");
+
+            const rentButton =
+                document.getElementById("rentTabButton");
+
+            const purchaseButton =
+                document.getElementById("purchaseTabButton");
+
+            if (sectionName === "rent") {
+
+                rentSection.classList.add("active");
+                purchaseSection.classList.remove("active");
+
+                rentButton.classList.add("active");
+                purchaseButton.classList.remove("active");
+
+            } else {
+
+                purchaseSection.classList.add("active");
+                rentSection.classList.remove("active");
+
+                purchaseButton.classList.add("active");
+                rentButton.classList.remove("active");
+            }
+        }
+
+
         function calculateRent() {
 
             const monthlyRent =
                 Number(document.getElementById("monthlyRent").value);
 
             const years =
-                Number(document.getElementById("years").value);
+                Number(document.getElementById("rentYears").value);
 
-            const errorMessage =
-                document.getElementById("errorMessage");
+            const error =
+                document.getElementById("rentError");
 
             const result =
-                document.getElementById("result");
+                document.getElementById("rentResult");
 
-            errorMessage.style.display = "none";
+            error.style.display = "none";
             result.style.display = "none";
 
             if (
@@ -232,53 +510,235 @@
                 monthlyRent <= 0 ||
                 years <= 0
             ) {
-                errorMessage.textContent =
+                error.textContent =
                     "家賃と居住年数には、0より大きい数値を入力してください。";
 
-                errorMessage.style.display = "block";
+                error.style.display = "block";
                 return;
             }
 
-            // 通常の家賃
             const basicTotal =
                 monthlyRent * 12 * years;
 
-            // 2年に1回、家賃1か月分の更新費用
             const renewalCount =
                 Math.floor(years / 2);
 
             const renewalCost =
                 monthlyRent * renewalCount;
 
-            // 支払い総額
             const totalCost =
                 basicTotal + renewalCost;
 
-            document.getElementById("basicTotal").textContent =
-                basicTotal.toLocaleString("ja-JP") + "円";
+            document.getElementById("rentBasicTotal").textContent =
+                formatYen(basicTotal);
 
-            document.getElementById("renewalCount").textContent =
+            document.getElementById("rentRenewalCount").textContent =
                 renewalCount.toLocaleString("ja-JP") + "回";
 
-            document.getElementById("renewalCost").textContent =
-                renewalCost.toLocaleString("ja-JP") + "円";
+            document.getElementById("rentRenewalCost").textContent =
+                formatYen(renewalCost);
 
-            document.getElementById("totalCost").textContent =
-                totalCost.toLocaleString("ja-JP") + "円";
+            document.getElementById("rentTotalCost").textContent =
+                formatYen(totalCost);
 
             result.style.display = "block";
         }
 
 
-        function clearForm() {
+        function clearRent() {
 
-            document.getElementById("monthlyRent").value = "";
-            document.getElementById("years").value = "";
+            document.getElementById("monthlyRent").value =
+                100000;
 
-            document.getElementById("errorMessage").style.display =
+            document.getElementById("rentYears").value =
+                10;
+
+            document.getElementById("rentError").style.display =
                 "none";
 
-            document.getElementById("result").style.display =
+            document.getElementById("rentResult").style.display =
+                "none";
+        }
+
+
+        function calculatePurchase() {
+
+            const salePrice =
+                Number(document.getElementById("salePrice").value);
+
+            const downPayment =
+                Number(document.getElementById("downPayment").value);
+
+            const annualInterestRate =
+                Number(document.getElementById("interestRate").value);
+
+            const repaymentYears =
+                Number(document.getElementById("repaymentYears").value);
+
+            const additionalCosts =
+                Number(document.getElementById("additionalCosts").value);
+
+            const error =
+                document.getElementById("purchaseError");
+
+            const result =
+                document.getElementById("purchaseResult");
+
+            error.style.display = "none";
+            result.style.display = "none";
+
+            if (
+                !Number.isFinite(salePrice) ||
+                !Number.isFinite(downPayment) ||
+                !Number.isFinite(annualInterestRate) ||
+                !Number.isFinite(repaymentYears) ||
+                !Number.isFinite(additionalCosts)
+            ) {
+                showPurchaseError(
+                    "すべての項目に数値を入力してください。"
+                );
+                return;
+            }
+
+            if (salePrice <= 0) {
+                showPurchaseError(
+                    "販売価格は0より大きい金額にしてください。"
+                );
+                return;
+            }
+
+            if (downPayment < 0) {
+                showPurchaseError(
+                    "頭金は0円以上にしてください。"
+                );
+                return;
+            }
+
+            if (downPayment > salePrice) {
+                showPurchaseError(
+                    "頭金は販売価格以下にしてください。"
+                );
+                return;
+            }
+
+            if (annualInterestRate < 0) {
+                showPurchaseError(
+                    "金利は0％以上にしてください。"
+                );
+                return;
+            }
+
+            if (repaymentYears <= 0) {
+                showPurchaseError(
+                    "返済年数は0より大きい数値にしてください。"
+                );
+                return;
+            }
+
+            if (additionalCosts < 0) {
+                showPurchaseError(
+                    "諸費用は0円以上にしてください。"
+                );
+                return;
+            }
+
+            const loanAmount =
+                salePrice - downPayment;
+
+            const numberOfPayments =
+                Math.floor(repaymentYears * 12);
+
+            const monthlyInterestRate =
+                annualInterestRate / 100 / 12;
+
+            let monthlyPayment;
+
+            if (loanAmount === 0) {
+
+                monthlyPayment = 0;
+
+            } else if (monthlyInterestRate === 0) {
+
+                monthlyPayment =
+                    loanAmount / numberOfPayments;
+
+            } else {
+
+                monthlyPayment =
+                    loanAmount
+                    * monthlyInterestRate
+                    * Math.pow(
+                        1 + monthlyInterestRate,
+                        numberOfPayments
+                    )
+                    / (
+                        Math.pow(
+                            1 + monthlyInterestRate,
+                            numberOfPayments
+                        )
+                        - 1
+                    );
+            }
+
+            const loanTotal =
+                monthlyPayment * numberOfPayments;
+
+            const totalInterest =
+                loanTotal - loanAmount;
+
+            const grandTotal =
+                downPayment + loanTotal + additionalCosts;
+
+            document.getElementById("loanAmount").textContent =
+                formatYen(loanAmount);
+
+            document.getElementById("monthlyPayment").textContent =
+                formatYen(monthlyPayment);
+
+            document.getElementById("totalInterest").textContent =
+                formatYen(totalInterest);
+
+            document.getElementById("loanTotal").textContent =
+                formatYen(loanTotal);
+
+            document.getElementById("purchaseGrandTotal").textContent =
+                formatYen(grandTotal);
+
+            result.style.display = "block";
+        }
+
+
+        function showPurchaseError(message) {
+
+            const error =
+                document.getElementById("purchaseError");
+
+            error.textContent = message;
+            error.style.display = "block";
+        }
+
+
+        function clearPurchase() {
+
+            document.getElementById("salePrice").value =
+                30000000;
+
+            document.getElementById("downPayment").value =
+                3000000;
+
+            document.getElementById("interestRate").value =
+                1.5;
+
+            document.getElementById("repaymentYears").value =
+                35;
+
+            document.getElementById("additionalCosts").value =
+                2000000;
+
+            document.getElementById("purchaseError").style.display =
+                "none";
+
+            document.getElementById("purchaseResult").style.display =
                 "none";
         }
     </script>
